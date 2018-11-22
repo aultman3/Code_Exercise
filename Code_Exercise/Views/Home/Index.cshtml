@@ -1,0 +1,107 @@
+﻿@model Code_Exercise.Models.Employee
+
+<script src="~/Scripts/jquery/jquery.min.js"></script>
+<script src="~/Scripts/mustache.js/mustache.min.js"></script>
+<script src="~/Scripts/twitter-bootstrap/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="~/Scripts/twitter-bootstrap/css/bootstrap.min.css" />
+<style>
+    .wrapper{
+        width:1000px;
+        margin:auto;
+        overflow-x:auto;
+    }
+
+    div.msg{
+        width:1000px;
+        margin:auto;
+    }
+    div.row{
+        margin-bottom:3px;
+    }
+
+</style>
+<div class="wrapper">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Code Exercise</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="msg"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <a href="/Home/Add" class="btn btn-secondary">Add</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="mytable"></div>
+        </div>
+    </div>
+</div>
+<script>
+    function successDelete(employee) {
+        $("div.msg").empty().html(`<div class='alert alert-success role='alert''>You have successfully deleted the employee ${employee.firstName} ${employee.lastName}.</div>`)
+    }
+
+    function loadTable() {
+        var options = {};
+        options.url = "/api/values";
+        options.type = "GET";
+        options.dataType = "json";
+        options.success = function (data) {
+            var template = `<table class="table">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>First Name</th>
+                                        <th>Last Name</th>
+                                        <th>Email</th>
+                                        <th>Position</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{#.}}
+                                        <tr>
+                                            <td>{{id}}</td>
+                                            <td>{{firstName}}</td>
+                                            <td>{{lastName}}</td>
+                                            <td>{{email}}</td>
+                                            <td>{{position}}</td>
+                                            <td><a href="/Home/Edit?id={{id}}">Edit</a>|<a onclick="emplDelete({{id}})" href="#">Delete</a></td>
+                                        </tr>
+                                    {{/.}}
+                                </tbody>
+                            </table>`;
+            var html = Mustache.to_html(template, data);
+            $("#mytable").html(html);
+        };
+        options.error = function () {
+            $("#msg").html("Error while calling the Web API!");
+        };
+        $.ajax(options);
+    }
+
+    $(document).ready(function () {
+        loadTable();
+    });
+
+    function emplDelete(id){
+        $.ajax({
+           url: '/api/values/' + id,
+           method: 'DELETE',
+           contentType: 'application/json',
+            success: function (result) {
+                $("#mytable").empty();
+                loadTable();
+                successDelete(result);
+            },
+           error: function (request, msg, error) { /*For time assuming always successful*/}
+       });
+    }
+
+</script>
